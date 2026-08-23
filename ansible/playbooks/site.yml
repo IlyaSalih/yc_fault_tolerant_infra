@@ -1,0 +1,6 @@
+---
+- name: Установить и настроить nginx на web-серверах
+  hosts: web
+  become: true
+  roles:
+    - nginx

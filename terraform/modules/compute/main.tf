@@ -11,11 +11,12 @@ resource "yandex_compute_instance" "bastion" {
   name        = "bastion"
   zone        = var.zone_a
   platform_id = "standard-v3"
+  allow_stopping_for_update = true
 
   resources {
     cores         = 2
-    memory        = 1
-    core_fraction = 20
+    memory        = 2
+    core_fraction = 100
   }
 
   boot_disk {

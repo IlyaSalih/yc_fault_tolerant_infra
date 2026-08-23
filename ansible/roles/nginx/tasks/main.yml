@@ -1,0 +1,21 @@
+---
+- name: Установить nginx
+  apt:
+    name: nginx
+    state: present
+    update_cache: true
+
+- name: Развернуть index.html с hostname сервера
+  template:
+    src: index.html.j2
+    dest: /var/www/html/index.html
+    owner: www-data
+    group: www-data
+    mode: "0644"
+  notify: Перезапустить nginx
+
+- name: Убедиться, что nginx запущен и добавлен в автозагрузку
+  systemd:
+    name: nginx
+    state: started
+    enabled: true

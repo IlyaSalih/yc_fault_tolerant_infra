@@ -1,0 +1,5 @@
+---
+- name: Перезапустить nginx
+  systemd:
+    name: nginx
+    state: restarted
