@@ -43,6 +43,13 @@ resource "yandex_vpc_security_group" "web" {
     v4_cidr_blocks = [var.private_cidr, var.private_cidr_b]
   }
 
+    ingress {
+    protocol          = "TCP"
+    description       = "HTTP from ALB itself (actual proxied requests, not just healthchecks)"
+    port              = 80
+    security_group_id = yandex_vpc_security_group.alb.id
+  }
+
   ingress {
     protocol       = "TCP"
     description    = "Node Exporter + Nginx Log Exporter scrape from Prometheus subnet"
