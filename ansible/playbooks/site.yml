@@ -2,5 +2,14 @@
 - name: Установить и настроить nginx на web-серверах
   hosts: web
   become: true
+
   roles:
     - nginx
+
+- name: Настроить exporters на web-серверах
+  hosts: web
+  become: true
+
+  roles:
+    - node_exporter
+    - nginx_exporter

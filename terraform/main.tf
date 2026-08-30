@@ -16,3 +16,13 @@ module "compute" {
   sg_web_id           = module.network.sg_web_id
   sg_alb_id           = module.network.sg_alb_id
 }
+
+module "monitoring" {
+  source = "./modules/monitoring"
+
+  ssh_public_key       = var.ssh_public_key
+  private_subnet_a_id  = module.network.private_subnet_a_id
+  public_subnet_id     = module.network.public_subnet_id
+  sg_prometheus_id     = module.network.sg_prometheus_id
+  sg_grafana_id        = module.network.sg_grafana_id
+}

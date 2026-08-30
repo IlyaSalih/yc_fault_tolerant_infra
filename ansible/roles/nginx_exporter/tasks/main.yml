@@ -1,0 +1,69 @@
+---
+- name: Установить необходимые пакеты
+  ansible.builtin.apt:
+    name:
+      - wget
+      - tar
+    state: present
+    update_cache: true
+
+- name: Создать пользователя nginx_exporter
+  ansible.builtin.user:
+    name: "{{ nginx_exporter_user }}"
+    system: true
+    shell: /usr/sbin/nologin
+    create_home: false
+
+- name: Скачать архив nginx-prometheus-exporter
+  ansible.builtin.get_url:
+    url: "https://github.com/nginx/nginx-prometheus-exporter/releases/download/v{{ nginx_exporter_version }}/nginx-prometheus-exporter_{{ nginx_exporter_version }}_linux_amd64.tar.gz"
+    dest: "/tmp/nginx-prometheus-exporter-{{ nginx_exporter_version }}.tar.gz"
+    mode: "0644"
+
+- name: Распаковать архив nginx-prometheus-exporter
+  ansible.builtin.unarchive:
+    src: "/tmp/nginx-prometheus-exporter-{{ nginx_exporter_version }}.tar.gz"
+    dest: "/tmp"
+    remote_src: true
+    creates: "/tmp/nginx-prometheus-exporter"
+
+- name: Установить бинарный файл nginx-prometheus-exporter
+  ansible.builtin.copy:
+    src: "/tmp/nginx-prometheus-exporter"
+    dest: "/usr/local/bin/nginx-prometheus-exporter"
+    owner: "{{ nginx_exporter_user }}"
+    group: "{{ nginx_exporter_user }}"
+    mode: "0755"
+    remote_src: true
+  notify: Перезапустить nginx_exporter
+
+- name: Настроить stub_status в nginx
+  ansible.builtin.blockinfile:
+    path: /etc/nginx/sites-available/default
+    marker: "# {mark} ANSIBLE MANAGED NGINX EXPORTER"
+    insertafter: "server_name _;"
+    block: |
+      location /nginx_status {
+          stub_status;
+          allow 127.0.0.1;
+          deny all;
+      }
+  notify: Перезапустить nginx
+
+- name: Создать systemd unit
+  ansible.builtin.template:
+    src: nginx_exporter.service.j2
+    dest: /etc/systemd/system/nginx_exporter.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Перезагрузить systemd
+    - Перезапустить nginx_exporter
+
+- name: Включить и запустить nginx_exporter
+  ansible.builtin.systemd:
+    name: nginx_exporter
+    state: started
+    enabled: true
+    daemon_reload: true

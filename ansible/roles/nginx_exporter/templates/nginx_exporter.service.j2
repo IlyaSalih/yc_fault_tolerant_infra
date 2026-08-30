@@ -1,0 +1,14 @@
+[Unit]
+Description=NGINX Prometheus Exporter
+After=network.target nginx.service
+Requires=nginx.service
+
+[Service]
+Type=simple
+User={{ nginx_exporter_user }}
+Group={{ nginx_exporter_user }}
+ExecStart=/usr/local/bin/nginx-prometheus-exporter --nginx.scrape-uri={{ nginx_status_url }}
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

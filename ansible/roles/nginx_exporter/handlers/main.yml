@@ -1,0 +1,14 @@
+---
+- name: Перезагрузить systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Перезапустить nginx_exporter
+  ansible.builtin.systemd:
+    name: nginx_exporter
+    state: restarted
+
+- name: Перезапустить nginx
+  ansible.builtin.systemd:
+    name: nginx
+    state: restarted
