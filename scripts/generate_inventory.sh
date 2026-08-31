@@ -40,7 +40,7 @@ all:
 
     prometheus:
       hosts:
-        prometheus:
+        prometheus-server:
           ansible_host: ${PROMETHEUS_IP}
       vars:
         ansible_ssh_common_args: >-
@@ -49,7 +49,7 @@ all:
 
     grafana:
       hosts:
-        grafana:
+        grafana-server:
           ansible_host: ${GRAFANA_INTERNAL_IP}
       vars:
         ansible_ssh_common_args: >-

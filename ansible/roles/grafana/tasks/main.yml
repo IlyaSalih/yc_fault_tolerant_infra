@@ -1,0 +1,64 @@
+---
+- name: Установить необходимые пакеты для snap
+  apt:
+    name:
+      - snapd
+    state: present
+  become: yes
+
+- name: Установить Grafana через snap
+  snap:
+    name: grafana
+    classic: yes
+    state: present
+  become: yes
+
+- name: Создать пользователя grafana (для совместимости с provisioning)
+  user:
+    name: grafana
+    system: yes
+    shell: /bin/false
+    home: /var/lib/grafana
+    create_home: yes
+    state: present
+  become: yes
+
+- name: Создать директории для provisioning
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: grafana
+    group: grafana
+    mode: 0755
+  loop:
+    - "{{ grafana_datasources_dir }}"
+    - "{{ grafana_dashboards_dir }}"
+  become: yes
+
+- name: Создать конфигурацию Grafana
+  template:
+    src: grafana.ini.j2
+    dest: /etc/grafana/grafana.ini
+    owner: grafana
+    group: grafana
+    mode: 0640
+  become: yes
+  notify: Restart grafana
+
+- name: Настроить datasource для Prometheus
+  template:
+    src: prometheus_datasource.yml.j2
+    dest: "{{ grafana_datasources_dir }}/prometheus.yml"
+    owner: grafana
+    group: grafana
+    mode: 0640
+  become: yes
+  notify: Restart grafana
+
+- name: Запустить и включить Grafana
+  systemd:
+    name: snap.grafana.grafana
+    state: started
+    enabled: yes
+    daemon_reload: yes
+  become: yes

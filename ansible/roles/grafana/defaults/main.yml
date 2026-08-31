@@ -1,0 +1,43 @@
+---
+grafana_version: ""
+
+grafana_port: 3000
+
+grafana_admin_user: admin
+grafana_admin_password: admin
+
+grafana_domain: "{{ ansible_default_ipv4.address }}"
+grafana_root_url: "http://{{ ansible_default_ipv4.address }}:{{ grafana_port }}"
+
+grafana_database_type: sqlite3
+grafana_database_path: /var/lib/grafana/grafana.db
+
+grafana_allow_sign_up: false
+grafana_allow_anonymous: false
+
+grafana_prometheus_url: http://localhost:9090
+grafana_prometheus_time_interval: 15s
+
+grafana_http_proxy: ""
+grafana_https_proxy: ""
+grafana_no_proxy: ""
+
+grafana_smtp_enabled: false
+grafana_smtp_host: ""
+grafana_smtp_user: ""
+grafana_smtp_password: ""
+grafana_smtp_from_address: ""
+
+grafana_log_level: info
+grafana_log_mode: console
+
+grafana_allow_loading_unsigned_plugins: false
+grafana_plugin_admin_enabled: true
+
+grafana_dashboards_dir: /etc/grafana/provisioning/dashboards
+grafana_datasources_dir: /etc/grafana/provisioning/datasources
+
+grafana_import_default_dashboards:
+  - id: 1860  # Node Exporter Dashboard
+  - id: 9614  # Nginx Exporter Dashboard
+  - id: 11074 # Prometheus Stats

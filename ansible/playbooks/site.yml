@@ -13,3 +13,16 @@
   roles:
     - node_exporter
     - nginx_exporter
+
+- name: Установить и настроить Prometheus
+  hosts: prometheus
+  become: true
+
+  roles:
+    - prometheus
+
+- name: Установить и настроить Grafana
+  hosts: grafana
+  become: yes
+  roles:
+    - grafana
