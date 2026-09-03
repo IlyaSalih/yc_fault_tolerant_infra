@@ -1,0 +1,32 @@
+---
+- name: Скопировать .deb пакет Filebeat на ВМ
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../../files/elastic/filebeat-{{ elastic_version }}-amd64.deb"
+    dest: /tmp/filebeat.deb
+    mode: "0644"
+
+- name: Установить Filebeat из локального .deb
+  ansible.builtin.apt:
+    deb: /tmp/filebeat.deb
+
+- name: Развернуть конфиг Filebeat
+  ansible.builtin.template:
+    src: filebeat.yml.j2
+    dest: /etc/filebeat/filebeat.yml
+    owner: root
+    group: root
+    mode: "0600"
+  notify: Перезапустить filebeat
+
+- name: Добавить filebeat в группу adm (доступ к /var/log/nginx)
+  ansible.builtin.user:
+    name: root
+    groups: adm
+    append: true
+
+- name: Включить и запустить Filebeat
+  ansible.builtin.systemd:
+    name: filebeat
+    state: started
+    enabled: true
+    daemon_reload: true

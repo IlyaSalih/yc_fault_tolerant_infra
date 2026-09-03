@@ -26,3 +26,13 @@ module "monitoring" {
   sg_prometheus_id     = module.network.sg_prometheus_id
   sg_grafana_id        = module.network.sg_grafana_id
 }
+
+module "logging" {
+  source = "./modules/logging"
+
+  ssh_public_key       = var.ssh_public_key
+  private_subnet_a_id  = module.network.private_subnet_a_id
+  public_subnet_id     = module.network.public_subnet_id
+  sg_elasticsearch_id  = module.network.sg_elasticsearch_id
+  sg_kibana_id         = module.network.sg_kibana_id
+}

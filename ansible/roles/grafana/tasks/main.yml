@@ -38,7 +38,7 @@
 - name: Создать конфигурацию Grafana
   template:
     src: grafana.ini.j2
-    dest: /etc/grafana/grafana.ini
+    dest: /var/snap/grafana/common/conf/grafana.ini
     owner: grafana
     group: grafana
     mode: 0640
@@ -55,6 +55,57 @@
   become: yes
   notify: Restart grafana
 
+- name: Развернуть кастомный дашборд под задание (USE-метрики + тресхолды)
+  ansible.builtin.template:
+    src: custom_dashboard.json.j2
+    dest: "{{ grafana_dashboards_dir }}/custom_dashboard.json"
+    owner: grafana
+    group: grafana
+    mode: "0644"
+  become: yes
+  notify: Restart grafana
+
+- name: Настроить provisioning для дашбордов
+  template:
+    src: dashboards.yml.j2
+    dest: "{{ grafana_dashboards_dir }}/dashboards.yml"
+    owner: grafana
+    group: grafana
+    mode: 0640
+  become: yes
+  notify: Restart grafana
+
+- name: Скачать JSON дашбордов
+  get_url:
+    url: "{{ item.url }}"
+    dest: "{{ grafana_dashboards_dir }}/{{ item.id }}.json"
+    owner: grafana
+    group: grafana
+    mode: 0644
+  loop:
+    - { id: 1860, url: "https://grafana.com/api/dashboards/1860/revisions/latest/download" }  # Node Exporter Full
+    - { id: 12708, url: "https://grafana.com/api/dashboards/12708/revisions/latest/download" } # Nginx Exporter
+    - { id: 11074, url: "https://grafana.com/api/dashboards/11074/revisions/latest/download" } # Prometheus Stats
+  become: yes
+
+- name: Заменить шаблонный datasource UID на реальный
+  ansible.builtin.replace:
+    path: "{{ grafana_dashboards_dir }}/{{ item.id }}.json"
+    regexp: '\$\{DS_[A-Z0-9_]*\}'
+    replace: 'prometheus'
+  loop:
+    - { id: 1860 }
+    - { id: 12708 }
+    - { id: 11074 }
+  become: yes
+
+- name: Исправить права доступа для provisioning (чтобы snap-демон мог читать)
+  shell: |
+    chmod -R 755 /var/snap/grafana/common/conf/provisioning
+    find /var/snap/grafana/common/conf/provisioning -type f -exec chmod 644 {} \;
+  become: yes
+  tags: permissions
+
 - name: Запустить и включить Grafana
   systemd:
     name: snap.grafana.grafana
@@ -62,3 +113,4 @@
     enabled: yes
     daemon_reload: yes
   become: yes
+

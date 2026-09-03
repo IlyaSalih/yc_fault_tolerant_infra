@@ -15,3 +15,9 @@ scrape_configs:
       - targets:
           - "{{ hostvars['web-a']['ansible_host'] }}:9113"
           - "{{ hostvars['web-b']['ansible_host'] }}:9113"
+      
+  - job_name: "nginx_log_exporter"
+    static_configs:
+      - targets:
+          - "{{ hostvars['web-a']['ansible_host'] }}:4040"
+          - "{{ hostvars['web-b']['ansible_host'] }}:4040"

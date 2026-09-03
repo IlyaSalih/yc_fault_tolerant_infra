@@ -13,6 +13,22 @@
   roles:
     - node_exporter
     - nginx_exporter
+    - nginx_log_exporter
+    - filebeat
+
+- name: Установить и настроить Elasticsearch
+  hosts: elasticsearch
+  become: true
+
+  roles:
+    - elasticsearch
+
+- name: Установить и настроить Kibana
+  hosts: kibana
+  become: true
+
+  roles:
+    - kibana
 
 - name: Установить и настроить Prometheus
   hosts: prometheus
@@ -26,3 +42,4 @@
   become: yes
   roles:
     - grafana
+

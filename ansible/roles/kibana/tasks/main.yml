@@ -1,0 +1,26 @@
+---
+- name: Скопировать .deb пакет Kibana на ВМ
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../../files/elastic/kibana-{{ elastic_version }}-amd64.deb"
+    dest: /tmp/kibana.deb
+    mode: "0644"
+
+- name: Установить Kibana из локального .deb
+  ansible.builtin.apt:
+    deb: /tmp/kibana.deb
+
+- name: Развернуть конфиг Kibana
+  ansible.builtin.template:
+    src: kibana.yml.j2
+    dest: /etc/kibana/kibana.yml
+    owner: root
+    group: kibana
+    mode: "0660"
+  notify: Перезапустить kibana
+
+- name: Включить и запустить Kibana
+  ansible.builtin.systemd:
+    name: kibana
+    state: started
+    enabled: true
+    daemon_reload: true

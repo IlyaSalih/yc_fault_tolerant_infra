@@ -73,3 +73,4 @@ resource "yandex_compute_instance" "web" {
     ssh-keys = "ubuntu:${var.ssh_public_key}"
   }
 }
+

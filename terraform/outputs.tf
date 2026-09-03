@@ -25,3 +25,15 @@ output "grafana_public_ip" {
 output "grafana_internal_ip" {
   value = module.monitoring.grafana_internal_ip
 }
+
+output "elasticsearch_internal_ip" {
+  value = module.logging.elasticsearch_internal_ip
+}
+
+output "kibana_public_ip" {
+  value = module.logging.kibana_public_ip
+}
+
+output "kibana_internal_ip" {
+  value = module.logging.kibana_internal_ip
+}

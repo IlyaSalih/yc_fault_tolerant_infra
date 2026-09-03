@@ -1,7 +1,7 @@
 ---
 - name: Restart grafana
   systemd:
-    name: grafana-server
+    name: snap.grafana.grafana 
     state: restarted
     daemon_reload: yes
   become: yes

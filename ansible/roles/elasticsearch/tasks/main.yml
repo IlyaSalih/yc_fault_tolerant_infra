@@ -1,0 +1,60 @@
+---
+- name: Дождаться освобождения dpkg lock
+  ansible.builtin.shell: |
+    while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
+      sleep 2
+    done
+  changed_when: false
+
+- name: Скопировать .deb пакет Elasticsearch на ВМ
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../../files/elastic/elasticsearch-{{ elastic_version }}-amd64.deb"
+    dest: /tmp/elasticsearch.deb
+    mode: "0644"
+
+- name: Установить Elasticsearch из локального .deb
+  ansible.builtin.apt:
+    deb: /tmp/elasticsearch.deb
+
+- name: Поднять vm.max_map_count (обязательный bootstrap-check для ES)
+  ansible.posix.sysctl:
+    name: vm.max_map_count
+    value: "262144"
+    state: present
+    reload: true
+
+- name: Убедиться, что директории данных и логов существуют с правильными правами
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: elasticsearch
+    group: elasticsearch
+    mode: "0750"
+  loop:
+    - /var/lib/elasticsearch
+    - /var/log/elasticsearch
+
+- name: Развернуть конфиг Elasticsearch
+  ansible.builtin.template:
+    src: elasticsearch.yml.j2
+    dest: /etc/elasticsearch/elasticsearch.yml
+    owner: root
+    group: elasticsearch
+    mode: "0660"
+  notify: Перезапустить elasticsearch
+
+- name: Ограничить heap size под ресурсы ВМ
+  ansible.builtin.copy:
+    dest: /etc/elasticsearch/jvm.options.d/heap.options
+    content: |
+      -Xms{{ elasticsearch_heap_size }}
+      -Xmx{{ elasticsearch_heap_size }}
+    mode: "0644"
+  notify: Перезапустить elasticsearch
+
+- name: Включить и запустить Elasticsearch
+  ansible.builtin.systemd:
+    name: elasticsearch
+    state: started
+    enabled: true
+    daemon_reload: true
