@@ -36,3 +36,16 @@ module "logging" {
   sg_elasticsearch_id  = module.network.sg_elasticsearch_id
   sg_kibana_id         = module.network.sg_kibana_id
 }
+
+module "backup" {
+  source = "./modules/backup"
+
+  disk_ids = concat(
+    [module.compute.bastion_disk_id],
+    module.compute.web_disk_ids,
+    [module.monitoring.prometheus_disk_id],
+    [module.monitoring.grafana_disk_id],
+    [module.logging.elasticsearch_disk_id],
+    [module.logging.kibana_disk_id],
+  )
+}

@@ -13,3 +13,11 @@ output "web_internal_ips" {
 output "alb_public_ip" {
   value = yandex_alb_load_balancer.this.listener[0].endpoint[0].address[0].external_ipv4_address[0].address
 }
+
+output "bastion_disk_id" {
+  value = yandex_compute_instance.bastion.boot_disk[0].disk_id
+}
+
+output "web_disk_ids" {
+  value = [for w in yandex_compute_instance.web : w.boot_disk[0].disk_id]
+}

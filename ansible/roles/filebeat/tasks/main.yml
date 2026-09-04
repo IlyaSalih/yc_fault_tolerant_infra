@@ -1,4 +1,11 @@
 ---
+- name: Дождаться освобождения dpkg lock
+  ansible.builtin.shell: |
+    while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
+      sleep 2
+    done
+  changed_when: false
+
 - name: Скопировать .deb пакет Filebeat на ВМ
   ansible.builtin.copy:
     src: "{{ playbook_dir }}/../../files/elastic/filebeat-{{ elastic_version }}-amd64.deb"
